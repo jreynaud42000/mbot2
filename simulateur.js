@@ -235,23 +235,43 @@
         }
         ctx.save();
         ctx.translate(robot.x, robot.y); ctx.rotate(robot.a);
-        // roues
-        ctx.fillStyle = '#222';
-        ctx.fillRect(-ROUE_D / 2, -CORPS.demiLargeur, ROUE_D, 2.4);
-        ctx.fillRect(-ROUE_D / 2, CORPS.demiLargeur - 2.4, ROUE_D, 2.4);
-        // chassis (bleu mBot2) et CyberPi
-        ctx.fillStyle = bloque ? '#c92a2a' : '#1f6fb5';
-        ctx.beginPath(); ctx.roundRect(CORPS.arriere, -CORPS.demiLargeur + 2.6, CORPS.avant - CORPS.arriere - 1.5, 2 * CORPS.demiLargeur - 5.2, 2); ctx.fill();
-        ctx.fillStyle = '#2f343b'; ctx.fillRect(-5.5, -3.2, 7, 6.4);
-        ctx.fillStyle = '#000'; ctx.fillRect(-4.3, -1.6, 3.2, 3.2);
+        // Dessin d'apres une photo du vrai mBot2 vu de dessus (repere : f vers l'avant, l vers la droite, en cm) :
+        // plaque bleue percee, roues noires en arriere du centre, ultrasons a l'avant, carte d'extension au milieu,
+        // batterie grise, CyberPi a l'arriere (ecran et 5 LED).
+        const rect = (f0, f1, l0, l1, couleur, rayon) => {
+            ctx.fillStyle = couleur; ctx.beginPath(); ctx.roundRect(f0, l0, f1 - f0, l1 - l0, rayon || 0); ctx.fill();
+        };
+        // roues (pneus a crampons) : de part et d'autre de la plaque
+        for (const cote of [-1, 1]) {
+            const l0 = cote < 0 ? -CORPS.demiLargeur : CORPS.demiLargeur - 1.7;
+            rect(-ROUE_D / 2, ROUE_D / 2, l0, l0 + 1.7, '#141414', 0.6);
+            ctx.strokeStyle = '#3a3a3a'; ctx.lineWidth = 0.18;
+            for (let f = -ROUE_D / 2 + 0.6; f < ROUE_D / 2; f += 0.75) { ctx.beginPath(); ctx.moveTo(f, l0 + 0.2); ctx.lineTo(f, l0 + 1.5); ctx.stroke(); }
+        }
+        // plaque du chassis (bleu clair anodise), trous de fixation
+        rect(CORPS.arriere, CORPS.avant - 0.8, -4.8, 4.8, '#2ea7dc', 0.9);
+        ctx.fillStyle = '#1b6e94';
+        for (let f = CORPS.arriere + 0.8; f < CORPS.avant - 1.2; f += 1.6) for (const l of [-4.2, 4.2]) { ctx.beginPath(); ctx.arc(f, l, 0.22, 0, 2 * Math.PI); ctx.fill(); }
+        if (bloque) { ctx.strokeStyle = '#e03131'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.roundRect(CORPS.arriere, -4.8, CORPS.avant - 0.8 - CORPS.arriere, 9.6, 0.9); ctx.stroke(); }
+        // carte d'extension mBot2 (circuit sombre, connecteurs blancs, composants)
+        rect(2.2, 9.2, -3.9, 3.9, '#2b3035', 0.3);
+        ctx.fillStyle = '#e9ecef';
+        for (let f = 2.8; f < 8.8; f += 1.2) { ctx.fillRect(f, -3.7, 0.8, 0.6); ctx.fillRect(f, 3.1, 0.8, 0.6); }
+        ctx.fillStyle = '#495057';
+        for (const [f, l] of [[4.2, -1.2], [4.2, 1.2], [6.4, -1.2], [6.4, 1.2]]) { ctx.beginPath(); ctx.arc(f, l, 0.75, 0, 2 * Math.PI); ctx.fill(); }
+        // batterie (cylindre gris)
+        rect(-1.8, 2.0, -3.6, 3.6, '#a5abb1', 0.6);
+        rect(-1.8, 2.0, -0.6, 0.6, '#c3c8cd');
+        // CyberPi : boitier sombre, ecran, 5 LED (1 a gauche, 5 a droite)
+        rect(CORPS.arriere + 0.4, -2.0, -3.9, 3.9, '#2d3136', 0.6);
+        rect(-5.9, -3.0, -1.6, 1.6, '#16213a', 0.2);
         ledsRobot.forEach(([r, g, b], i) => {
-            ctx.fillStyle = (r || g || b) ? 'rgb(' + r + ',' + g + ',' + b + ')' : '#555';
-            ctx.beginPath(); ctx.arc(0.6, -2.4 + i * 1.2, 0.45, 0, 2 * Math.PI); ctx.fill();
+            ctx.fillStyle = (r || g || b) ? 'rgb(' + r + ',' + g + ',' + b + ')' : '#5c636a';
+            ctx.beginPath(); ctx.arc(-2.5, -2.6 + i * 1.3, 0.4, 0, 2 * Math.PI); ctx.fill();
         });
-        // capteur a ultrasons (deux « yeux »)
-        ctx.fillStyle = '#dee2e6'; ctx.fillRect(CORPS.avant - 2.2, -4, 1.8, 8);
-        ctx.fillStyle = '#1c7ed6';
-        for (const l of [-2, 2]) { ctx.beginPath(); ctx.arc(CORPS.avant - 0.6, l, 1.3, 0, 2 * Math.PI); ctx.fill(); }
+        // capteur a ultrasons a l'avant : module sombre et ses deux transducteurs
+        rect(CORPS.avant - 1.6, CORPS.avant - 0.2, -4.1, 4.1, '#22262a', 0.3);
+        for (const l of [-2.2, 2.2]) rect(CORPS.avant - 0.9, CORPS.avant + 0.5, l - 1.25, l + 1.25, '#c9ced4', 0.4);
         // capteurs de ligne
         for (const [nom, l] of Object.entries(QUAD_L)) {
             ctx.fillStyle = voirCapteurs && voitLigne(nom) ? '#40c057' : '#adb5bd';
