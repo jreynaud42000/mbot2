@@ -1,4 +1,5 @@
-// exemples_aide.js — un petit programme d'exemple pour chaque bloc mBot2, montre dans « Aide sur ce bloc » (app.js) :
+// exemples_aide.js — un petit programme d'exemple pour chaque bloc de la boite a outils (blocs mBot2 et blocs
+// generaux : controle, logique, maths, texte, variables, listes, fonctions), montre dans « Aide sur ce bloc » (app.js) :
 // dessine en blocs (lecture seule), avec son code Python et le bouton « Insérer l'exemple ».
 // Meme principe que les EXEMPLES_BLOCS de l'editeur micro:bit (blockly_ts_mode_classe/un.js).
 //
@@ -173,6 +174,105 @@
         { types: ['mb_batterie'], titre: 'Niveau de la batterie',
           texte: 'L\'écran affiche la charge de la batterie, en %.',
           blocs: [demarrage(label(joindre('', B('mb_batterie'))))] },
+
+        // ----- Blocs generaux (Controle, Logique, Maths, Texte, Variables, Listes, Fonctions) -----
+        { types: ['controls_repeat_ext'], titre: 'Clignoter 5 fois',
+          texte: 'Le bloc « répéter » refait 5 fois : allumer en rouge, attendre, éteindre, attendre.',
+          blocs: [demarrage(B('controls_repeat_ext', null, { TIMES: n(5), DO: { block: pile(led('#ff0000'), attendre(0.3), eteindre(), attendre(0.3)) } }))] },
+        { types: ['controls_whileUntil'], titre: 'Avancer tant que la voie est libre',
+          texte: 'Tant que l\'obstacle est à plus de 20 cm, le robot avance ; dès qu\'il est plus près, la boucle s\'arrête et le robot aussi.',
+          blocs: [demarrage(B('controls_whileUntil', { MODE: 'WHILE' }, { BOOL: { block: compare(B('mb_distance'), 'GT', 20) },
+                    DO: { block: B('mb_mouvement', { SENS: 'forward' }, { V: n(40) }) } }), stop())] },
+        { types: ['controls_for'], titre: 'Compter de 1 à 10',
+          texte: 'La variable i prend les valeurs 1, 2, 3… jusqu\'à 10 ; chaque valeur s\'affiche une demi-seconde.',
+          blocs: [demarrage(B('controls_for', { VAR: { name: 'i' } }, { FROM: n(1), TO: n(10), BY: n(1),
+                    DO: { block: pile(ligneBloc(B('variables_get', { VAR: { name: 'i' } })), attendre(0.5)) } }))] },
+        { types: ['controls_flow_statements'], titre: 'Sortir d\'une boucle',
+          texte: 'Le robot compte jusqu\'à 10, mais « sortir de la boucle » l\'arrête dès que i dépasse 5.',
+          blocs: [demarrage(B('controls_for', { VAR: { name: 'i' } }, { FROM: n(1), TO: n(10), BY: n(1), DO: { block: pile(
+                    si(compare(B('variables_get', { VAR: { name: 'i' } }), 'GT', 5), B('controls_flow_statements', { FLOW: 'BREAK' })),
+                    ligneBloc(B('variables_get', { VAR: { name: 'i' } }))) } }))] },
+        { types: ['controls_if', 'logic_compare'], titre: 'Freiner devant un obstacle',
+          texte: 'Si l\'obstacle est à moins de 20 cm, le robot s\'arrête ; sinon, il avance.',
+          blocs: [demarrage(toujours(si(compare(B('mb_distance'), 'LT', 20), stop(), B('mb_mouvement', { SENS: 'forward' }, { V: n(40) }))))] },
+        { types: ['logic_operation'], titre: 'Deux boutons à la fois',
+          texte: 'Les LED ne s\'allument que si A ET B sont appuyés en même temps.',
+          blocs: [demarrage(toujours(si(B('logic_operation', { OP: 'AND' }, { A: val('mb_bouton', { BOUTON: 'a' }), B: val('mb_bouton', { BOUTON: 'b' }) }),
+                    led('#00ff00'), eteindre())))] },
+        { types: ['logic_negate'], titre: 'Clignoter en attendant',
+          texte: 'Tant que le bouton A n\'est PAS appuyé, les LED clignotent ; un appui sur A arrête le clignotement.',
+          blocs: [demarrage(B('controls_whileUntil', { MODE: 'WHILE' }, { BOOL: { block: B('logic_negate', null, { BOOL: val('mb_bouton', { BOUTON: 'a' }) }) },
+                    DO: { block: pile(led('#ffaa00'), attendre(0.2), eteindre(), attendre(0.2)) } }), ligne('Parti !'))] },
+        { types: ['logic_boolean'], titre: 'Un interrupteur',
+          texte: 'La variable « en_marche » vaut vrai au départ : le robot avance. Le bouton B la met à faux : il s\'arrête.',
+          blocs: [demarrage(B('variables_set', { VAR: { name: 'en_marche' } }, { VALUE: val('logic_boolean', { BOOL: 'TRUE' }) }),
+                            toujours(si(B('variables_get', { VAR: { name: 'en_marche' } }), B('mb_mouvement', { SENS: 'forward' }, { V: n(40) }), stop()))),
+                  quandBouton('b', B('variables_set', { VAR: { name: 'en_marche' } }, { VALUE: val('logic_boolean', { BOOL: 'FALSE' }) }))] },
+
+        { types: ['math_number', 'math_arithmetic'], titre: 'Calculer une distance',
+          texte: 'Le robot calcule 3 × 20 = 60 et l\'affiche, puis avance de 10 + 20 = 30 cm.',
+          blocs: [demarrage(ligneBloc(B('math_arithmetic', { OP: 'MULTIPLY' }, { A: n(3), B: n(20) })),
+                            B('mb_distance_cm', { SENS: '1' }, { D: { block: B('math_arithmetic', { OP: 'ADD' }, { A: n(10), B: n(20) }) } }))] },
+        { types: ['math_random_int'], titre: 'Promenade au hasard',
+          texte: 'Quatre fois : le robot tourne d\'un angle tiré au hasard entre 30° et 180°, puis avance de 15 cm.',
+          blocs: [demarrage(B('controls_repeat_ext', null, { TIMES: n(4), DO: { block: pile(
+                    B('mb_tourner_angle', { SENS: '1' }, { A: { block: B('math_random_int', null, { FROM: n(30), TO: n(180) }) } }),
+                    B('mb_distance_cm', { SENS: '1' }, { D: n(15) })) } }))] },
+        { types: ['math_round'], titre: 'Arrondir une mesure',
+          texte: 'La distance est arrondie au centimètre près avant d\'être affichée.',
+          blocs: [demarrage(toujours(label(B('math_round', { OP: 'ROUND' }, { NUM: { block: B('mb_distance') } })), attendre(0.2)))] },
+        { types: ['math_single'], titre: 'Écart sans signe',
+          texte: '« valeur absolue » enlève le signe : l\'écran montre de combien le robot est décalé, à gauche comme à droite.',
+          blocs: [demarrage(toujours(label(B('math_single', { OP: 'ABS' }, { NUM: { block: B('mb_ecart_ligne') } })), attendre(0.2)))] },
+        { types: ['math_modulo'], titre: 'Pair ou impair',
+          texte: 'Pour i de 1 à 6 : si le reste de i ÷ 2 vaut 0 (nombre pair), les LED sont vertes, sinon rouges.',
+          blocs: [demarrage(B('controls_for', { VAR: { name: 'i' } }, { FROM: n(1), TO: n(6), BY: n(1), DO: { block: pile(
+                    si(B('logic_compare', { OP: 'EQ' }, { A: { block: B('math_modulo', null, { DIVIDEND: { block: B('variables_get', { VAR: { name: 'i' } }) }, DIVISOR: n(2) }) }, B: n(0) }),
+                       led('#00ff00'), led('#ff0000')),
+                    attendre(0.5)) } }))] },
+        { types: ['math_constrain'], titre: 'Ralentir près d\'un obstacle',
+          texte: 'La vitesse vaut la distance mesurée, mais elle reste entre 0 et 100 tr/min : le robot ralentit en approchant d\'un mur.',
+          blocs: [demarrage(toujours(
+                    B('variables_set', { VAR: { name: 'vitesse' } }, { VALUE: { block: B('math_constrain', null, { VALUE: { block: B('mb_distance') }, LOW: n(0), HIGH: n(100) }) } }),
+                    B('mb_vitesse_roues', null, { G: val('variables_get', { VAR: { name: 'vitesse' } }), D: val('variables_get', { VAR: { name: 'vitesse' } }) })))] },
+
+        { types: ['text', 'text_join'], titre: 'Un message composé',
+          texte: '« créer un texte avec » colle des morceaux : un texte, la distance mesurée, puis l\'unité.',
+          blocs: [demarrage(toujours(ligneBloc(B('text_join', null, { ADD0: t('Distance : '), ADD1: val('mb_distance'), ADD2: t(' cm') },
+                    { extraState: { itemCount: 3 }, inline: true })), attendre(1)))] },
+        { types: ['text_length'], titre: 'Compter les lettres',
+          texte: 'L\'écran affiche le nombre de lettres du mot « mBot2 » : 5.',
+          blocs: [demarrage(ligneBloc(joindre('Lettres : ', B('text_length', null, { VALUE: t('mBot2') }))))] },
+
+        { types: ['variables_set', 'variables_get', 'math_change'], titre: 'Compter les appuis',
+          texte: 'La variable « compteur » part de 0 ; chaque appui sur A lui ajoute 1, et l\'écran affiche sa valeur.',
+          blocs: [demarrage(B('variables_set', { VAR: { name: 'compteur' } }, { VALUE: n(0) }), label(B('variables_get', { VAR: { name: 'compteur' } }))),
+                  quandBouton('a', B('math_change', { VAR: { name: 'compteur' } }, { DELTA: n(1) }), label(B('variables_get', { VAR: { name: 'compteur' } })))] },
+
+        { types: ['lists_create_with', 'controls_forEach'], titre: 'Jouer une mélodie',
+          texte: 'La liste contient 4 fréquences (do, mi, sol, do aigu) ; « pour chaque élément » les joue l\'une après l\'autre.',
+          blocs: [demarrage(B('controls_forEach', { VAR: { name: 'frequence' } }, {
+                    LIST: { block: B('lists_create_with', null, { ADD0: n(262), ADD1: n(330), ADD2: n(392), ADD3: n(523) }, { extraState: { itemCount: 4 }, inline: true }) },
+                    DO: { block: B('mb_son_frequence', null, { F: val('variables_get', { VAR: { name: 'frequence' } }), T: n(0.3) }) } }))] },
+        { types: ['lists_length', 'lists_getIndex', 'lists_setIndex'], titre: 'Mémoriser des mesures',
+          texte: 'La liste « mesures » a 3 cases ; la distance est rangée dans la case n° 1, puis l\'écran affiche cette case et la taille de la liste.',
+          blocs: [demarrage(
+                    B('variables_set', { VAR: { name: 'mesures' } }, { VALUE: { block: B('lists_create_with', null, { ADD0: n(0), ADD1: n(0), ADD2: n(0) }, { extraState: { itemCount: 3 }, inline: true }) } }),
+                    B('lists_setIndex', { MODE: 'SET', WHERE: 'FROM_START' }, { LIST: val('variables_get', { VAR: { name: 'mesures' } }), AT: n(1), TO: val('mb_distance') }),
+                    ligneBloc(joindre('Case 1 : ', B('lists_getIndex', { MODE: 'GET', WHERE: 'FROM_START' }, { VALUE: val('variables_get', { VAR: { name: 'mesures' } }), AT: n(1) }))),
+                    ligneBloc(joindre('Taille : ', B('lists_length', null, { VALUE: val('variables_get', { VAR: { name: 'mesures' } }) }))))] },
+
+        { types: ['procedures_defnoreturn', 'procedures_callnoreturn'], titre: 'Une fonction « clignoter »',
+          texte: 'La fonction « clignoter » regroupe 4 blocs ; le programme l\'appelle 3 fois au lieu de recopier les blocs.',
+          blocs: [B('procedures_defnoreturn', { NAME: 'clignoter' }, { STACK: { block: pile(led('#ff0000'), attendre(0.2), eteindre(), attendre(0.2)) } }),
+                  demarrage(B('controls_repeat_ext', null, { TIMES: n(3), DO: { block: B('procedures_callnoreturn', null, null, { extraState: { name: 'clignoter' } }) } }))] },
+        { types: ['procedures_defreturn', 'procedures_callreturn', 'procedures_ifreturn'], titre: 'Une fonction qui renvoie un résultat',
+          texte: 'La fonction « comparer » reçoit une distance x : si x est inférieure à 20, elle renvoie « près », sinon « loin ». L\'écran affiche le résultat.',
+          blocs: [B('procedures_defreturn', { NAME: 'comparer' }, {
+                      STACK: { block: B('procedures_ifreturn', null, { CONDITION: { block: compare(B('variables_get', { VAR: { name: 'x' } }), 'LT', 20) }, VALUE: t('près') },
+                                        { extraState: '<mutation value="1"></mutation>' }) },
+                      RETURN: t('loin') }, { extraState: { params: [{ name: 'x' }] } }),
+                  demarrage(toujours(label(B('procedures_callreturn', null, { ARG0: val('mb_distance') }, { extraState: { name: 'comparer', params: ['x'] } })), attendre(0.2)))] },
     ];
 
     const parType = {};
