@@ -18,6 +18,8 @@ saisons, blocs de la couleur de la puce de leur catégorie, titres de groupe ave
 | `blocs.js` | blocs mBot2, générateur Python (format mBlock « téléversement »), générateur « SIMU » pour le simulateur |
 | `app.js` | espace Blockly, boîte à outils et couleurs, thèmes Blockly, code Python, fichiers, exemples, aide, console |
 | `simulateur.js` | robot 2D sur piste à l'échelle (200 × 150 cm), capteurs, écran 128 × 128, LED, son, boutons |
+| `images/mbot2_dessus.png` | photo du mBot2 vu de dessus (fond transparent), dessinée par le simulateur à l'échelle des roues |
+| `exemples_aide.js` | un programme d'exemple par bloc, montré dans « Aide sur ce bloc » avec le bouton « Insérer l'exemple » |
 | `televersement.js` | envoi du programme dans le CyberPi par USB (protocole F3…F4 de mBlock) et console du robot |
 | `bandeau.js` | thème, contraste, saisons et décors, puces, recherche de blocs (repris de `blockly_ts_mode_classe`) |
 | `tuto.js` | visite guidée (moteur repris de `blockly_ts_mode_classe`, étapes mBot2) |

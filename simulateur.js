@@ -217,27 +217,32 @@
     // ---------- Dessin ----------
     let voirCapteurs = true;
     const ledsRobot = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]];
-    function dessiner() {
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.drawImage(fond, 0, 0);
-        ctx.setTransform(ECH, 0, 0, ECH, 0, 0);
-        ctx.strokeStyle = '#495057'; ctx.lineWidth = 1; ctx.strokeRect(0.5, 0.5, LARGEUR - 1, HAUTEUR - 1);
-        for (const o of obstacles) {
-            ctx.fillStyle = '#b07a46'; ctx.fillRect(o.x, o.y, o.w, o.h);
-            ctx.strokeStyle = '#7a4f26'; ctx.lineWidth = 0.6; ctx.strokeRect(o.x, o.y, o.w, o.h);
-            ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(o.x + o.w, o.y + o.h); ctx.moveTo(o.x + o.w, o.y); ctx.lineTo(o.x, o.y + o.h); ctx.stroke();
-        }
-        if (voirCapteurs) {
-            const [x, y] = avant(ULTRASONS_F, 0), d = mesureUltrasons();
-            ctx.strokeStyle = 'rgba(28, 126, 214, 0.75)'; ctx.lineWidth = 0.5; ctx.setLineDash([2, 1.5]);
-            ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(robot.a) * d, y + Math.sin(robot.a) * d); ctx.stroke();
-            ctx.setLineDash([]);
-        }
+    // Robot : photo du vrai mBot2 vu de dessus (images/mbot2_dessus.png, fond transparent, robot tourne vers la gauche).
+    // Echelle tiree des roues : 135 px sur la photo pour 6,5 cm ; axe des roues en x = 237 px, milieu en y = 149 px.
+    // Sur une photo, les LED ne changent pas de couleur : les LED allumees sont superposees, avec leur halo.
+    const PHOTO = { pxParCm: 135 / ROUE_D, axeX: 237, axeY: 149 };
+    const photo = new Image();
+    photo.src = 'images/mbot2_dessus.png';
+    function dessinerRobotPhoto() {
+        const s = PHOTO.pxParCm;
         ctx.save();
-        ctx.translate(robot.x, robot.y); ctx.rotate(robot.a);
-        // Dessin d'apres une photo du vrai mBot2 vu de dessus (repere : f vers l'avant, l vers la droite, en cm) :
-        // plaque bleue percee, roues noires en arriere du centre, ultrasons a l'avant, carte d'extension au milieu,
-        // batterie grise, CyberPi a l'arriere (ecran et 5 LED).
+        ctx.rotate(Math.PI);   // repere de la photo : x vers l'arriere, y vers la gauche du robot
+        ctx.drawImage(photo, -PHOTO.axeX / s, -PHOTO.axeY / s, photo.naturalWidth / s, photo.naturalHeight / s);
+        ctx.restore();
+        ledsRobot.forEach(([r, g, b], i) => {   // 5 LED du CyberPi, de la gauche (LED 1) vers la droite du robot
+            if (!(r || g || b)) return;
+            const f = -4.5, l = -2.4 + i * 1.2, c = r + ',' + g + ',' + b;   // bord du CyberPi, a cote de l'ecran (x ≈ 330 px)
+            const halo = ctx.createRadialGradient(f, l, 0, f, l, 1.1);
+            halo.addColorStop(0, 'rgba(' + c + ',0.95)'); halo.addColorStop(1, 'rgba(' + c + ',0)');
+            ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(f, l, 1.1, 0, 2 * Math.PI); ctx.fill();
+            ctx.fillStyle = 'rgb(' + c + ')'; ctx.beginPath(); ctx.arc(f, l, 0.4, 0, 2 * Math.PI); ctx.fill();
+        });
+        if (bloque) { ctx.strokeStyle = '#e03131'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.roundRect(CORPS.arriere, -5.5, CORPS.avant - CORPS.arriere, 11, 0.9); ctx.stroke(); }
+    }
+    /** Dessin de secours (photo pas encore chargee ou introuvable). */
+    function dessinerRobotVectoriel() {
+        // Repere : f vers l'avant, l vers la droite, en cm. Plaque bleue percee, roues noires en arriere du centre,
+        // ultrasons a l'avant, carte d'extension au milieu, batterie grise, CyberPi a l'arriere (ecran et 5 LED).
         const rect = (f0, f1, l0, l1, couleur, rayon) => {
             ctx.fillStyle = couleur; ctx.beginPath(); ctx.roundRect(f0, l0, f1 - f0, l1 - l0, rayon || 0); ctx.fill();
         };
@@ -272,6 +277,26 @@
         // capteur a ultrasons a l'avant : module sombre et ses deux transducteurs
         rect(CORPS.avant - 1.6, CORPS.avant - 0.2, -4.1, 4.1, '#22262a', 0.3);
         for (const l of [-2.2, 2.2]) rect(CORPS.avant - 0.9, CORPS.avant + 0.5, l - 1.25, l + 1.25, '#c9ced4', 0.4);
+    }
+    function dessiner() {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(fond, 0, 0);
+        ctx.setTransform(ECH, 0, 0, ECH, 0, 0);
+        ctx.strokeStyle = '#495057'; ctx.lineWidth = 1; ctx.strokeRect(0.5, 0.5, LARGEUR - 1, HAUTEUR - 1);
+        for (const o of obstacles) {
+            ctx.fillStyle = '#b07a46'; ctx.fillRect(o.x, o.y, o.w, o.h);
+            ctx.strokeStyle = '#7a4f26'; ctx.lineWidth = 0.6; ctx.strokeRect(o.x, o.y, o.w, o.h);
+            ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(o.x + o.w, o.y + o.h); ctx.moveTo(o.x + o.w, o.y); ctx.lineTo(o.x, o.y + o.h); ctx.stroke();
+        }
+        if (voirCapteurs) {
+            const [x, y] = avant(ULTRASONS_F, 0), d = mesureUltrasons();
+            ctx.strokeStyle = 'rgba(28, 126, 214, 0.75)'; ctx.lineWidth = 0.5; ctx.setLineDash([2, 1.5]);
+            ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(robot.a) * d, y + Math.sin(robot.a) * d); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        ctx.save();
+        ctx.translate(robot.x, robot.y); ctx.rotate(robot.a);
+        if (photo.complete && photo.naturalWidth) dessinerRobotPhoto(); else dessinerRobotVectoriel();
         // capteurs de ligne
         for (const [nom, l] of Object.entries(QUAD_L)) {
             ctx.fillStyle = voirCapteurs && voitLigne(nom) ? '#40c057' : '#adb5bd';
