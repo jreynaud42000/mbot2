@@ -24,6 +24,16 @@
 
     // ---------- Pistes (200 × 150 cm, dessinees a 4 px/cm) ----------
     const LARGEUR = 200, HAUTEUR = 150, ECH = 4;
+    // Reglages du panneau (memes curseurs que le simulateur micro:bit, memorises pour ce navigateur) :
+    //  - largeur de la ligne noire des pistes, en cm : plus etroite, plus facile de la perdre ;
+    //  - echelle du robot : purement visuelle (dessin agrandi), sans effet sur sa position, ses capteurs ni les collisions.
+    function lireReglage(cle, defaut, min, max) {
+        let v = NaN;
+        try { v = parseFloat(localStorage.getItem(cle)); } catch (e) { /* navigation privee */ }
+        return Number.isFinite(v) ? Math.max(min, Math.min(max, v)) : defaut;
+    }
+    let LARGEUR_LIGNE = lireReglage('mbot2_largeur_ligne', 2.5, 1, 5);
+    let ECHELLE_ROBOT = lireReglage('mbot2_echelle_robot', 1, 1, 4);
     function courbeFermee(ctx, pts) {   // Catmull-Rom fermee passant par tous les points
         const n = pts.length;
         ctx.moveTo(pts[0][0], pts[0][1]);
@@ -45,7 +55,7 @@
             nom: 'Ovale (suivi de ligne)', depart: [92, 120, 0], obstacles: [],
             dessin(ctx) {
                 quadrillage(ctx);
-                ctx.strokeStyle = '#111'; ctx.lineWidth = 2.5;
+                ctx.strokeStyle = '#111'; ctx.lineWidth = LARGEUR_LIGNE;
                 ctx.beginPath(); ctx.arc(55, 75, 45, Math.PI / 2, 3 * Math.PI / 2); ctx.lineTo(145, 30);
                 ctx.arc(145, 75, 45, -Math.PI / 2, Math.PI / 2); ctx.closePath(); ctx.stroke();
             },
@@ -59,7 +69,7 @@
             })(),
             dessin(ctx) {
                 quadrillage(ctx);
-                ctx.strokeStyle = '#111'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+                ctx.strokeStyle = '#111'; ctx.lineWidth = LARGEUR_LIGNE; ctx.lineJoin = 'round';
                 ctx.beginPath(); courbeFermee(ctx, SINUEUX); ctx.closePath(); ctx.stroke();
             },
         },
@@ -88,14 +98,19 @@
     fond.getContext('2d', { willReadFrequently: true });   // la piste est relue (getImageData) a chaque changement
     const canevas = $('piste'), ctx = canevas.getContext('2d');
 
-    function chargerPiste(cle) {
-        piste = PISTES[cle] ? cle : 'ovale';
-        const p = PISTES[piste], c = fond.getContext('2d');
+    /** Dessine le sol de la piste et le relit pour les capteurs (sans toucher au robot ni aux obstacles). */
+    function dessinerSol() {
+        const c = fond.getContext('2d');
         c.setTransform(1, 0, 0, 1, 0, 0);
         c.fillStyle = '#ffffff'; c.fillRect(0, 0, fond.width, fond.height);
         c.setTransform(ECH, 0, 0, ECH, 0, 0);
-        p.dessin(c);
+        PISTES[piste].dessin(c);
         sol = c.getImageData(0, 0, fond.width, fond.height).data;
+    }
+    function chargerPiste(cle) {
+        piste = PISTES[cle] ? cle : 'ovale';
+        const p = PISTES[piste];
+        dessinerSol();
         obstacles = p.obstacles.map(o => Object.assign({}, o));
         replacer();
         try { localStorage.setItem('mbot2_piste', piste); } catch (e) { /* navigation privee */ }
@@ -296,7 +311,10 @@
         }
         ctx.save();
         ctx.translate(robot.x, robot.y); ctx.rotate(robot.a);
+        ctx.save();
+        ctx.scale(ECHELLE_ROBOT, ECHELLE_ROBOT);   // echelle visuelle seulement : les capteurs restent a leur vraie place
         if (photo.complete && photo.naturalWidth) dessinerRobotPhoto(); else dessinerRobotVectoriel();
+        ctx.restore();
         // capteurs de ligne
         for (const [nom, l] of Object.entries(QUAD_L)) {
             ctx.fillStyle = voirCapteurs && voitLigne(nom) ? '#40c057' : '#adb5bd';
@@ -639,7 +657,7 @@
     const obstacleSous = (x, y) => obstacles.slice().reverse().find(o => x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h);
     canevas.addEventListener('pointerdown', (e) => {
         const [x, y] = versCm(e);
-        if (Math.hypot(x - robot.x, y - robot.y) < 10) prise = { cible: robot, dx: robot.x - x, dy: robot.y - y };
+        if (Math.hypot(x - robot.x, y - robot.y) < 10 * ECHELLE_ROBOT) prise = { cible: robot, dx: robot.x - x, dy: robot.y - y };
         else { const o = obstacleSous(x, y); if (o) prise = { cible: o, dx: o.x - x, dy: o.y - y }; }
         if (prise) { canevas.setPointerCapture(e.pointerId); canevas.classList.add('glisse'); }
     });
@@ -654,7 +672,7 @@
     canevas.addEventListener('pointercancel', lacher);
     canevas.addEventListener('wheel', (e) => {
         const [x, y] = versCm(e);
-        if (Math.hypot(x - robot.x, y - robot.y) > 12) return;
+        if (Math.hypot(x - robot.x, y - robot.y) > 12 * ECHELLE_ROBOT) return;
         e.preventDefault();
         robot.a += (e.deltaY > 0 ? 15 : -15) * Math.PI / 180;
     }, { passive: false });
@@ -668,6 +686,20 @@
         obstacles.push(o);
     });
     $('btn-replacer').addEventListener('click', replacer);
+
+    // Curseurs « Largeur de la piste » et « Échelle du robot »
+    function curseur(id, cle, valeur, format, appliquer) {
+        const champ = $(id), affichage = $(id + '-val');
+        champ.value = valeur;
+        const maj = () => { affichage.textContent = format(Number(champ.value)); };
+        champ.addEventListener('input', () => {
+            maj(); appliquer(Number(champ.value));
+            try { localStorage.setItem(cle, champ.value); } catch (e) { /* navigation privee */ }
+        });
+        maj();
+    }
+    curseur('largeur-piste', 'mbot2_largeur_ligne', LARGEUR_LIGNE, v => v.toLocaleString('fr-FR'), v => { LARGEUR_LIGNE = v; dessinerSol(); });
+    curseur('echelle-robot', 'mbot2_echelle_robot', ECHELLE_ROBOT, v => '×' + v.toLocaleString('fr-FR'), v => { ECHELLE_ROBOT = v; });
     $('voir-capteurs').addEventListener('change', (e) => { voirCapteurs = e.target.checked; });
 
     const choix = $('choix-piste');
