@@ -1,7 +1,7 @@
 # Éditeur mBot2 (Technologie Services)
 
 Éditeur de programmation par blocs, en français, pour le robot **mBot2 de Makeblock** (carte CyberPi, MicroPython).
-Ergonomie des éditeurs micro:bit (`blockly_ts_mode_classe`) : bandeau orange, thèmes clair / sombre / contraste élevé /
+Ergonomie des éditeurs micro:bit (`easybloc_ts_mode_classe`) : bandeau orange, thèmes clair / sombre / contraste élevé /
 saisons, blocs de la couleur de la puce de leur catégorie, titres de groupe avec trait de séparation, console, visite guidée.
 
 ## Lancer
@@ -21,8 +21,8 @@ saisons, blocs de la couleur de la puce de leur catégorie, titres de groupe ave
 | `images/mbot2_dessus.png` | photo du mBot2 vu de dessus (fond transparent), dessinée par le simulateur à l'échelle des roues |
 | `exemples_aide.js` | un programme d'exemple par bloc, montré dans « Aide sur ce bloc » avec le bouton « Insérer l'exemple » |
 | `televersement.js` | envoi du programme dans le CyberPi par USB (protocole F3…F4 de mBlock) et console du robot |
-| `bandeau.js` | thème, contraste, saisons et décors, puces, recherche de blocs (repris de `blockly_ts_mode_classe`) |
-| `tuto.js` | visite guidée (moteur repris de `blockly_ts_mode_classe`, étapes mBot2) |
+| `bandeau.js` | thème, contraste, saisons et décors, puces, recherche de blocs (repris de `easybloc_ts_mode_classe`) |
+| `tuto.js` | visite guidée (moteur repris de `easybloc_ts_mode_classe`, étapes mBot2) |
 | `app.py`, `lancer_projet.bat` | petit serveur local sans cache |
 
 ## Programme généré
