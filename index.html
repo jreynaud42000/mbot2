@@ -317,25 +317,51 @@
     #mesures b { display: block; font-size: 13px; color: var(--texte-saisie); }
     #mesures span { color: var(--ec-doux); }
 
-    /* CyberPi : objet reel, couleurs fixes */
+    /* CyberPi : objet reel, couleurs fixes. Dessin d'apres les photos du vrai boitier (arduiblog.com, CyberPi Go Kit) :
+       boitier horizontal gris fume translucide, joystick a gauche (capteur de lumiere et micro au-dessus), ecran 1,44"
+       au centre, bouton A carre et bouton B triangle a droite, USB-C sur le bord, bande de 5 LED sur le bord bas.
+       Cotes en % d'un boitier de 320 x 136 px : le dessin suit la largeur du panneau (unites cqw pour les textes). */
     #cyberpi-zone { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
-    #cyberpi { position: relative; width: 210px; height: 250px; flex: 0 0 auto; border-radius: 18px; background: linear-gradient(160deg, #3a3f47, #23272d);
-      box-shadow: 0 3px 10px rgba(0,0,0,0.45), inset 0 0 0 2px #50565f; }
-    #cyberpi-ecran { position: absolute; left: 41px; top: 26px; width: 128px; height: 128px; image-rendering: pixelated; background: #000;
-      border: 4px solid #0e0f11; border-radius: 3px; }
-    #cyberpi-leds { position: absolute; left: 30px; right: 30px; top: 175px; display: flex; justify-content: space-between; }
-    .cp-led { width: 18px; height: 18px; border-radius: 50%; background: #2b2f35; border: 2px solid #15171a; }
-    .cp-btn { position: absolute; width: 30px; height: 30px; border-radius: 50%; border: 2px solid #111; background: #e9ecef; color: #222;
-      font: 700 13px var(--font); padding: 0; margin: 0; cursor: pointer; }
-    .cp-btn:active, .cp-btn.appuye { background: #ffd43b; }
-    #cp-a { left: 8px; top: 72px; } #cp-b { right: 8px; top: 72px; }
-    #cp-joy { position: absolute; left: 75px; top: 200px; width: 60px; height: 44px; }
-    .cp-joy { position: absolute; width: 20px; height: 15px; padding: 0; margin: 0; border-radius: 4px; border: 1px solid #111;
-      background: #adb5bd; cursor: pointer; font-size: 9px; line-height: 13px; color: #222; }
-    .cp-joy:active, .cp-joy.appuye { background: #ffd43b; }
-    #cp-haut { left: 20px; top: 0; } #cp-bas { left: 20px; top: 29px; } #cp-gauche { left: 0; top: 14px; } #cp-droite { left: 40px; top: 14px; }
-    #cp-milieu { left: 20px; top: 14px; border-radius: 50%; background: #495057; color: #fff; }
-    #cyberpi-nom { position: absolute; left: 0; right: 0; top: 8px; text-align: center; font: 700 10px var(--font); color: #c9ced6; letter-spacing: 0.15em; }
+    #cyberpi { position: relative; width: 100%; max-width: 320px; aspect-ratio: 320 / 136; flex: 0 1 320px; container-type: inline-size;
+      border-radius: 4.4% / 10.3%; background: linear-gradient(180deg, #4a4f57 0%, #2a2e34 55%, #1c1f24 100%);
+      box-shadow: 0 6px 14px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.25), inset 0 0 0 1px rgba(255,255,255,.08); }
+    #cyberpi::before { content: ''; position: absolute; left: 1.9%; right: 1.9%; top: 4.4%; bottom: 10.3%; border-radius: 3.1% / 8.6%; pointer-events: none;
+      background: repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 2px, transparent 2px 9px), rgba(20,24,30,.35); }
+    .cp-capteur { position: absolute; top: 8.8%; width: 2.5%; aspect-ratio: 1; border-radius: 50%; }
+    #cp-lumiere { left: 13.75%; background: #9aa3ad; box-shadow: inset 0 0 0 2px #5c646e; }
+    #cp-micro { left: 18.1%; background: #5c646e; box-shadow: inset 0 0 0 2px #3a4048; }
+    #cyberpi-nom { position: absolute; left: 4.4%; bottom: 3%; font: 600 2.8cqw var(--font); color: #aab2bc; letter-spacing: 0.1em; }
+    #cyberpi-ecran { position: absolute; left: 31.25%; top: 5.9%; width: 37.5%; height: 88.2%; box-sizing: border-box; image-rendering: pixelated;
+      background: #000; border: 1.25cqw solid #07090c; border-radius: 1cqw; }
+    #cyberpi-reflet { position: absolute; left: 31.25%; top: 5.9%; width: 37.5%; height: 88.2%; border-radius: 1cqw; pointer-events: none;
+      background: linear-gradient(155deg, rgba(255,255,255,.09), rgba(255,255,255,0) 40%); }
+    .cp-logement { position: absolute; left: 72.5%; width: 12.5%; height: 29.4%; background: #23272d; }
+    #cp-logement-a { top: 10.3%; border-radius: 2.8cqw; } #cp-logement-b { top: 47%; border-radius: 50%; }
+    .cp-btn { position: absolute; padding: 0; margin: 0; border: none; cursor: pointer; background: linear-gradient(160deg, #8c949c, #5a6168);
+      box-shadow: 0 2px 3px rgba(0,0,0,.5); transition: transform .06s, filter .06s; }
+    #cp-a { left: 74.4%; top: 14.7%; width: 8.75%; height: 20.6%; border-radius: 2.2cqw; }
+    #cp-b { left: 75.3%; top: 51.5%; width: 8.75%; height: 20.6%; clip-path: polygon(10% 0, 100% 50%, 10% 100%); }
+    .cp-lettre { position: absolute; left: 88.1%; font: 600 3.44cqw Arial, sans-serif; color: #c3c9d0; pointer-events: none; }
+    #cp-lettre-a { top: 19%; } #cp-lettre-b { top: 57%; }
+    #cp-usb { position: absolute; right: 0.6%; top: 36.8%; width: 1.9%; height: 22%; border-radius: 0.6cqw; background: #8a9199; }
+    #cp-joy { position: absolute; left: 4.4%; top: 22%; width: 23.75%; aspect-ratio: 1; border-radius: 50%;
+      background: radial-gradient(circle, #1b1e23 58%, #30353c 60%, #1b1e23 100%); }
+    #cp-milieu { left: 14.5%; top: 14.5%; width: 71%; height: 71%; border-radius: 50%;
+      background: radial-gradient(circle at 38% 32%, #9ca3ab, #5d646c 70%, #474d54); box-shadow: 0 3px 5px rgba(0,0,0,.55); }
+    /* Zones cliquables du joystick (haut, bas, gauche, droite) sur le bord du bouton ; le centre = joystick appuye. */
+    .cp-joy { position: absolute; z-index: 1; padding: 0; margin: 0; border: none; background: transparent; cursor: pointer;
+      color: rgba(255,255,255,.4); font-size: 2.2cqw; line-height: 1; }
+    #cp-haut { left: 23.7%; top: 0; width: 52.6%; height: 29%; } #cp-bas { left: 23.7%; bottom: 0; width: 52.6%; height: 29%; }
+    #cp-gauche { left: 0; top: 23.7%; width: 29%; height: 52.6%; } #cp-droite { right: 0; top: 23.7%; width: 29%; height: 52.6%; }
+    .cp-joy:hover { color: #fff; }
+    /* Appui : le bouton s'enfonce (cadre jaune pour bien le voir) ; le joystick penche du cote pousse. */
+    .cp-btn.appuye, .cp-btn:active { transform: translateY(1px) scale(.95); filter: brightness(1.25) drop-shadow(0 0 2px #ffd43b); }
+    #cp-joy:has(#cp-haut.appuye) #cp-milieu { transform: translateY(-12%); } #cp-joy:has(#cp-bas.appuye) #cp-milieu { transform: translateY(12%); }
+    #cp-joy:has(#cp-gauche.appuye) #cp-milieu { transform: translateX(-12%); } #cp-joy:has(#cp-droite.appuye) #cp-milieu { transform: translateX(12%); }
+    .cp-btn:focus-visible, .cp-joy:focus-visible { outline: 2px solid #ff5501; outline-offset: 1px; }
+    /* Bande de 5 LED sur le bord bas : eteintes, gris fonce ; allumees, couleur et halo poses par simulateur.js. */
+    #cyberpi-leds { position: absolute; left: 30%; right: 30%; bottom: 2.2%; height: 4.4%; display: flex; justify-content: space-around; }
+    .cp-led { width: 15.6%; height: 100%; border-radius: 3cqw; background: #3a3f47; }
     #capteurs-cp { flex: 1 1 150px; font-size: 12px; display: flex; flex-direction: column; gap: 6px; }
     #capteurs-cp label { display: flex; flex-direction: column; gap: 2px; }
     #capteurs-cp input[type="range"] { width: 100%; accent-color: var(--accent); }
@@ -531,19 +557,27 @@
           </div>
         </div>
         <div class="bloc-sim" id="cyberpi-zone">
-          <div id="cyberpi" aria-label="Carte CyberPi simulée">
-            <div id="cyberpi-nom">CYBERPI</div>
-            <canvas id="cyberpi-ecran" width="128" height="128"></canvas>
-            <button class="cp-btn" id="cp-a" data-bouton="a" title="Bouton A">A</button>
-            <button class="cp-btn" id="cp-b" data-bouton="b" title="Bouton B">B</button>
-            <div id="cyberpi-leds"><span class="cp-led"></span><span class="cp-led"></span><span class="cp-led"></span><span class="cp-led"></span><span class="cp-led"></span></div>
+          <div id="cyberpi" role="group" aria-label="Carte CyberPi simulée">
+            <span class="cp-capteur" id="cp-lumiere" title="Capteur de lumière"></span>
+            <span class="cp-capteur" id="cp-micro" title="Microphone"></span>
             <div id="cp-joy">
-              <button class="cp-joy" id="cp-haut" data-bouton="up" title="Joystick vers le haut">▲</button>
-              <button class="cp-joy" id="cp-gauche" data-bouton="left" title="Joystick vers la gauche">◀</button>
-              <button class="cp-joy" id="cp-milieu" data-bouton="middle" title="Joystick appuyé">●</button>
-              <button class="cp-joy" id="cp-droite" data-bouton="right" title="Joystick vers la droite">▶</button>
-              <button class="cp-joy" id="cp-bas" data-bouton="down" title="Joystick vers le bas">▼</button>
+              <button class="cp-btn" id="cp-milieu" data-bouton="middle" title="Joystick appuyé" aria-label="Joystick appuyé"></button>
+              <button class="cp-joy" id="cp-haut" data-bouton="up" title="Joystick vers le haut" aria-label="Joystick vers le haut">▲</button>
+              <button class="cp-joy" id="cp-bas" data-bouton="down" title="Joystick vers le bas" aria-label="Joystick vers le bas">▼</button>
+              <button class="cp-joy" id="cp-gauche" data-bouton="left" title="Joystick vers la gauche" aria-label="Joystick vers la gauche">◀</button>
+              <button class="cp-joy" id="cp-droite" data-bouton="right" title="Joystick vers la droite" aria-label="Joystick vers la droite">▶</button>
             </div>
+            <canvas id="cyberpi-ecran" width="128" height="128"></canvas>
+            <span id="cyberpi-reflet"></span>
+            <span class="cp-logement" id="cp-logement-a"></span>
+            <span class="cp-logement" id="cp-logement-b"></span>
+            <button class="cp-btn" id="cp-a" data-bouton="a" title="Bouton A" aria-label="Bouton A"></button>
+            <button class="cp-btn" id="cp-b" data-bouton="b" title="Bouton B" aria-label="Bouton B"></button>
+            <span class="cp-lettre" id="cp-lettre-a">A</span>
+            <span class="cp-lettre" id="cp-lettre-b">B</span>
+            <span id="cp-usb" title="Port USB-C"></span>
+            <div id="cyberpi-leds"><span class="cp-led"></span><span class="cp-led"></span><span class="cp-led"></span><span class="cp-led"></span><span class="cp-led"></span></div>
+            <div id="cyberpi-nom">CyberPi</div>
           </div>
           <div id="capteurs-cp">
             <b>Capteurs du CyberPi</b>
