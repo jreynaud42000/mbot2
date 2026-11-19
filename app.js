@@ -632,10 +632,10 @@
                 y = b.getBoundingRectangle().bottom + 40;
                 premier = premier || b;
             }
+            griserOrphelins();   // dans le groupe : le grisage s'annule avec l'ajout (un seul Ctrl+Z)
         } finally {
             Blockly.Events.setGroup(false);
         }
-        griserOrphelins();
         if (nonAccroche) window.consoleAjouterLigne('Exemple ajouté à part (grisé) : votre « quand le programme démarre » se termine par « répéter indéfiniment ». ' +
             'Déplacez les blocs de l\'exemple là où vous les voulez.', 'info');
         if (premier) {
