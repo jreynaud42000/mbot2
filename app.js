@@ -512,7 +512,11 @@
         $('aide-contenu').innerHTML = html;
         exempleAffiche = exemple || null;
         $('aide-exemple').hidden = !exemple;
+        // Programme deja present : choix entre le remplacer par l'exemple et y ajouter l'exemple ; zone vide : un seul bouton.
+        const vide = ws.getTopBlocks(false).length === 0;
         $('aide-inserer').hidden = !exemple;
+        $('aide-inserer').textContent = vide ? "Insérer l'exemple" : 'Ajouter à mon programme';
+        $('aide-remplacer').hidden = !exemple || vide;
         if (exemple) {
             $('aide-exemple-titre').textContent = 'Exemple : ' + exemple.titre;
             $('aide-exemple-desc').textContent = exemple.texte;
@@ -528,6 +532,12 @@
     $('aide-bloc').addEventListener('keydown', e => { if (e.key === 'Escape') fermerAide(); });
     $('aide-bloc').addEventListener('mousedown', e => { if (e.target === $('aide-bloc')) fermerAide(); });
     $('aide-inserer').addEventListener('click', () => { if (exempleAffiche) { insererExemple(exempleAffiche); fermerAide(); } });
+    $('aide-remplacer').addEventListener('click', () => {
+        if (!exempleAffiche) return;
+        if (!confirm("Effacer votre programme et le remplacer par l'exemple ?\n(« Défaire » ou Ctrl+Z le rétablit.)")) return;
+        insererExemple(exempleAffiche, true);
+        fermerAide();
+    });
 
     // Exemple d'un bloc (exemples_aide.js), repris de l'editeur micro:bit : petit espace Blockly en lecture seule,
     // cree une fois puis reutilise, au theme de l'editeur.
@@ -587,7 +597,10 @@
      * Ajoute l'exemple sous les blocs existants, en un seul pas d'annulation (Ctrl+Z). « quand le programme démarre »
      * est unique : si le programme en a deja un, les blocs de l'exemple s'ajoutent a la fin du sien.
      */
-    function insererExemple(ex) {
+    function insererExemple(ex, remplacer) {
+        // Un seul groupe d'evenements pour l'effacement (remplacement) et l'ajout : un seul Ctrl+Z annule le tout.
+        Blockly.Events.setGroup(true);
+        if (remplacer) ws.clear();
         let x = 40, y = 40;
         const existants = ws.getTopBlocks(false);
         if (existants.length) {
@@ -596,7 +609,6 @@
             y = Math.max(...zones.map(r => r.bottom)) + 60;
         }
         let premier = null, nonAccroche = false;
-        Blockly.Events.setGroup(true);
         try {
             for (const def of piles(ex)) {
                 const demarrage = def.type === 'mb_demarrage' && ws.getBlocksByType('mb_demarrage', false)[0];
