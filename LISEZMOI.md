@@ -10,6 +10,18 @@ saisons, blocs de la couleur de la puce de leur catégorie, titres de groupe ave
 - Pour envoyer un programme au robot : **Chrome ou Edge** (Web Serial). Fermer mBlock et mLink avant.
 - Aucune dépendance Python (bibliothèque standard) ; Blockly 10.4.3 est embarqué dans `lib/blockly` (aucun CDN).
 
+## Exécutable Windows (sans Python)
+
+- Construire : `python -m PyInstaller --noconfirm app.spec` (PyInstaller 6.22). Résultat en mode dossier (« onedir »,
+  comme l'éditeur micro:bit) : `dist/Mbot2Easybloc_V1/Mbot2Easybloc_V1.exe` et son dossier `_internal/` (≈ 15 Mo).
+- Distribuer le **dossier entier**, jamais l'exe seul : zipper `dist/Mbot2Easybloc_V1` en `dist/Mbot2Easybloc_V1.zip`
+  (≈ 6 Mo, dossier racine `Mbot2Easybloc_V1`), puis supprimer `build/`. `build/` et `dist/` ne sont pas versionnés.
+- L'exe sert les copies embarquées dans `_internal/` (`sys._MEIPASS`) : port 8020, ou l'un des neuf suivants s'il
+  est occupé ; il ouvre le navigateur (sauf option `--sans-navigateur`) et n'affiche pas de console. Pour l'arrêter :
+  Gestionnaire des tâches, ou fermer la session Windows.
+- Tout nouveau fichier chargé par `index.html` doit être ajouté à la liste `datas` de `app.spec`. Au changement de
+  version : `VERSION` (`app.py`), menu Aide (`index.html`), nom de l'exe (`app.spec`) et `version_info.txt`.
+
 ## Fichiers
 
 | Fichier | Rôle |
@@ -25,6 +37,7 @@ saisons, blocs de la couleur de la puce de leur catégorie, titres de groupe ave
 | `bandeau.js` | thème, contraste, saisons et décors, puces, recherche de blocs (repris de `easybloc_ts_mode_classe`) |
 | `tuto.js` | visite guidée (moteur repris de `easybloc_ts_mode_classe`, étapes mBot2) |
 | `app.py`, `lancer_projet.bat` | petit serveur local sans cache |
+| `app.spec`, `version_info.txt` | construction de l'exe Windows (PyInstaller) et sa ressource de version |
 
 ## Programme généré
 
